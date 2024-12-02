@@ -1,6 +1,7 @@
 #include <stdio.h> // Inclui a biblioteca padrão de entrada e saída
 #include <stdlib.h> // Inclui a biblioteca padrão com funções gerais, incluindo atoi e EXIT_FAILURE/SUCCESS
 #include <string.h> // Inclui a biblioteca de manipulação de strings (para strtok, embora não diretamente usada neste código).
+#include <math.h>
 
 typedef struct {
     int x;
@@ -8,11 +9,11 @@ typedef struct {
     float distOrigem;
 } Coordenada;
 
-int distOrigem(Coordenada coodenadas[]);
+void distOrigem(Coordenada coodenadas[]);
 
 int main() {
     // Ponteiros para os arquivos de entrada e saída
-    FILE *fp_in = fopen("lists.txt", "r");
+    FILE *fp_in = fopen("L0Qteste.in", "r");
     FILE *fp_out = fopen("saida.txt", "w");
 
     // Verifica se os arquivos foram abertos com sucesso
@@ -22,10 +23,10 @@ int main() {
     }
 
     char line[255];
-    const char comma[] = ","; )
+    const char comma[] = ",";
     char *slice;
     //coloquei isso aqui
-    Coordenada coordenadas[100];
+    //Coordenada coordenadas[100];
 
     // Loop para ler cada linha do arquivo de entrada
     while (fgets(line, 255, fp_in) != NULL) {
@@ -57,6 +58,7 @@ int main() {
 //fiz essa função
 
 void distOrigem(Coordenada coordenadas[]){
+    int tamanho;
     for (int i = 0; i < tamanho; i++) {
         // Distância = sqrt(x^2 + y^2)
         coordenadas[i].distOrigem = sqrt(coordenadas[i].x * coordenadas[i].x +
