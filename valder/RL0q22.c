@@ -46,8 +46,8 @@ int ehCoordenada(const char *s, Coordenada *coord) {
 // Função principal
 int main() {
     // Arquivos de entrada e saída
-    FILE *fp_in = fopen("L0Q1.in", "r");
-    FILE *fp_out = fopen("L0Q1.out", "w");
+    FILE *fp_in = fopen("L0Q2.in", "r");
+    FILE *fp_out = fopen("L0Q2.test.out", "w");
 
     if (!fp_in || !fp_out) {
         printf("Erro ao abrir os arquivos.\n");
