@@ -1,15 +1,16 @@
+#include <ctype.h>
+#include <math.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
-#include <math.h>
 
 #define MAX_LINHA 1024
 #define MAX_ITENS 100
 
 typedef struct {
     double x, y;
-    double distOrigem; // Para armazenar a distância da origem
+    double distOrigem;  // Para armazenar a distância da origem
 } Coordenada;
 
 // Função para calcular a distância da origem
@@ -152,31 +153,52 @@ void processarLinha(char *linha, FILE *saida) {
         fprintf(saida, "%s%s", strings[i], (i == qtdStrings - 1) ? " " : " ");
         free(strings[i]);
     }
+    if (qtdStrings == 0) {
+        fprintf(saida, " ");
+    }
 
     fprintf(saida, "int:");
     for (int i = 0; i < qtdInteiros; i++) {
         fprintf(saida, "%d%s", inteiros[i], (i == qtdInteiros - 1) ? " " : " ");
     }
 
+    int secondDecimal = 0;
     fprintf(saida, "float:");
     for (int i = 0; i < qtdFloats; i++) {
-        fprintf(saida, "%.2lf%s", floats[i], (i == qtdFloats - 1) ? " " : " ");
+        secondDecimal = (int)((floats[i] * 100)) % 10;
+        if (secondDecimal == 0) {
+            fprintf(saida, "%.1f%s", floats[i], (i == qtdFloats - 1) ? " " : " ");
+        } else {
+            fprintf(saida, "%.2f%s", floats[i], (i == qtdFloats - 1) ? " " : " ");
+        }
     }
 
     fprintf(saida, "p:");
     for (int i = 0; i < qtdCoords; i++) {
-        if (fabs(coordenadas[i].x - (int)coordenadas[i].x) < 1e-9)
+        if (fabs(coordenadas[i].x - (int)coordenadas[i].x) < 1e-9){
             fprintf(saida, "(%d,", (int)coordenadas[i].x);
-        else
-            fprintf(saida, "(%.1lf,", coordenadas[i].x);
+        }
+        else{
+            secondDecimal = (int)((coordenadas[i].x * 100)) % 10;
+            if(secondDecimal == 0){
+                fprintf(saida, "(%.1f,", coordenadas[i].x);
+            }else{
+                fprintf(saida, "(%.2f,", coordenadas[i].x);
+            }
+        }
 
-        if (fabs(coordenadas[i].y - (int)coordenadas[i].y) < 1e-9)
+        if (fabs(coordenadas[i].y - (int)coordenadas[i].y) < 1e-9){
             fprintf(saida, "%d)%s", (int)coordenadas[i].y, (i == qtdCoords - 1) ? "" : " ");
-        else
-            fprintf(saida, "%.1lf)%s", coordenadas[i].y, (i == qtdCoords - 1) ? "" : " ");
+        }
+        else{
+            secondDecimal = (int)((coordenadas[i].y * 100)) % 10;
+            if(secondDecimal == 0){
+                fprintf(saida, "%.1f)%s", coordenadas[i].y, (i == qtdCoords - 1) ? "" : " ");
+            }else{
+                fprintf(saida, "%.2f)%s", coordenadas[i].y, (i == qtdCoords - 1) ? "" : " ");
+            }
+        }
     }
-
-    fprintf(saida, "\n");
 }
 
 // Função principal
@@ -189,8 +211,13 @@ int main() {
         return EXIT_FAILURE;
     }
 
+    bool firstRun = false;
     char linha[MAX_LINHA];
     while (fgets(linha, sizeof(linha), entrada)) {
+        if (firstRun) {
+            fprintf(saida, "\n");
+        }
+        firstRun = true;  // preciso de setar essa flag para a formatação sair correta e nao colocar um \n extra no final
         linha[strcspn(linha, "\n")] = '\0';
         processarLinha(linha, saida);
     }
@@ -198,6 +225,6 @@ int main() {
     fclose(entrada);
     fclose(saida);
 
-    printf("Processamento concluído. Saída em 'L0Q2.out'.\n");
+    // printf("Processamento concluído. Saída em 'L0Q2.out'.\n");
     return EXIT_SUCCESS;
 }
