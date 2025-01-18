@@ -105,13 +105,13 @@ void imprimirListas(NodoInteiro* cabeca, FILE* arquivoSaida) {
                 fprintf(arquivoSaida, "%.2f", atualReal->valor);
                 atualReal = atualReal->proximo;
                 if (atualReal != inicio) {
-                    fprintf(arquivoSaida, " − >");
+                    fprintf(arquivoSaida, " - >");
                 }
             } while (atualReal != inicio);
         }
         fprintf(arquivoSaida, ")");
         if (atual->proximo != NULL) {
-            fprintf(arquivoSaida, " − >");
+            fprintf(arquivoSaida, " - >");
         }
         atual = atual->proximo;
     }
