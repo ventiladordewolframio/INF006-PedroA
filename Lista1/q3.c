@@ -1,174 +1,159 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 
-// Estrutura para lista simplesmente ligada circular
-typedef struct NodoReal {
+// Definição das estruturas
+typedef struct NoListaSimples {
     float valor;
-    struct NodoReal* proximo;
-} NodoReal;
+    struct NoListaSimples* prox;
+} NoListaSimples;
 
-// Estrutura para lista duplamente ligada
-typedef struct NodoInteiro {
+typedef struct NoListaDupla {
     int chave;
-    NodoReal* listaReais;  // Ponteiro para a lista circular associada
-    struct NodoInteiro* proximo;
-    struct NodoInteiro* anterior;
-} NodoInteiro;
+    NoListaSimples* listaSimples;
+    struct NoListaDupla* prox;
+    struct NoListaDupla* ant;
+} NoListaDupla;
 
-// Função para criar um novo nó para a lista de inteiros
-NodoInteiro* criarNodoInteiro(int chave) {
-    NodoInteiro* novoNodo = (NodoInteiro*)malloc(sizeof(NodoInteiro));
-    novoNodo->chave = chave;
-    novoNodo->listaReais = NULL;
-    novoNodo->proximo = NULL;
-    novoNodo->anterior = NULL;
-    return novoNodo;
-}
+// Funções auxiliares
+NoListaSimples* inserirOrdenadoListaSimples(NoListaSimples* lista, float valor) {
+    NoListaSimples* novo = malloc(sizeof(NoListaSimples));
+    novo->valor = valor;
 
-// Função para criar um novo nó para a lista de reais
-NodoReal* criarNodoReal(float valor) {
-    NodoReal* novoNodo = (NodoReal*)malloc(sizeof(NodoReal));
-    novoNodo->valor = valor;
-    novoNodo->proximo = NULL;
-    return novoNodo;
-}
-
-// Inserção ordenada na lista duplamente ligada
-void inserirOrdenadoInteiro(NodoInteiro** cabeca, int chave) {
-    NodoInteiro* novoNodo = criarNodoInteiro(chave);
-    if (*cabeca == NULL || (*cabeca)->chave > chave) {
-        novoNodo->proximo = *cabeca;
-        if (*cabeca != NULL) (*cabeca)->anterior = novoNodo;
-        *cabeca = novoNodo;
-        return;
+    if (!lista) {
+        novo->prox = novo; // Circular
+        return novo;
     }
-    NodoInteiro* atual = *cabeca;
-    while (atual->proximo != NULL && atual->proximo->chave < chave) {
-        atual = atual->proximo;
-    }
-    novoNodo->proximo = atual->proximo;
-    if (atual->proximo != NULL) atual->proximo->anterior = novoNodo;
-    atual->proximo = novoNodo;
-    novoNodo->anterior = atual;
-}
 
-// Inserção ordenada na lista circular
-void inserirOrdenadoReal(NodoReal** cabeca, float valor) {
-    NodoReal* novoNodo = criarNodoReal(valor);
-    if (*cabeca == NULL) {
-        novoNodo->proximo = novoNodo;
-        *cabeca = novoNodo;
-        return;
-    }
-    NodoReal *atual = *cabeca, *anterior = NULL;
+    NoListaSimples* atual = lista;
+    NoListaSimples* anterior = NULL;
+
     do {
-        if (valor < atual->valor) break;
+        if (valor <= atual->valor) break;
         anterior = atual;
-        atual = atual->proximo;
-    } while (atual != *cabeca);
+        atual = atual->prox;
+    } while (atual != lista);
 
-    novoNodo->proximo = atual;
-    if (anterior == NULL) {
-        NodoReal* cauda = *cabeca;
-        while (cauda->proximo != *cabeca) cauda = cauda->proximo;
-        cauda->proximo = novoNodo;
-        *cabeca = novoNodo;
+    novo->prox = atual;
+    if (anterior) {
+        anterior->prox = novo;
     } else {
-        anterior->proximo = novoNodo;
-    }
-}
-
-// Associação de lista de reais a cada nó da lista duplamente ligada
-void associarListaReais(NodoInteiro* cabeca, float* vetorReais, int tamanhoReais) {
-    NodoInteiro* atual = cabeca;
-    while (atual != NULL) {
-        for (int i = 0; i < tamanhoReais; i++) {
-            if (fabs(atual->chave - vetorReais[i]) <= 0.99) {
-                inserirOrdenadoReal(&atual->listaReais, vetorReais[i]);
-            }
+        // Inserção na cabeça
+        NoListaSimples* ultimo = lista;
+        while (ultimo->prox != lista) {
+            ultimo = ultimo->prox;
         }
-        atual = atual->proximo;
+        ultimo->prox = novo;
+        return novo;
+    }
+
+    return lista;
+}
+
+NoListaDupla* inserirOrdenadoListaDupla(NoListaDupla* lista, int chave) {
+    NoListaDupla* novo = malloc(sizeof(NoListaDupla));
+    novo->chave = chave;
+    novo->listaSimples = NULL;
+    novo->prox = NULL;
+    novo->ant = NULL;
+
+    if (!lista) return novo;
+
+    NoListaDupla* atual = lista;
+    while (atual->prox && atual->chave < chave) {
+        atual = atual->prox;
+    }
+
+    if (atual->chave >= chave) {
+        if (atual->ant) atual->ant->prox = novo;
+        novo->ant = atual->ant;
+        novo->prox = atual;
+        atual->ant = novo;
+        return lista->chave < chave ? lista : novo;
+    } else {
+        atual->prox = novo;
+        novo->ant = atual;
+        return lista;
     }
 }
 
-// Função para imprimir as listas no arquivo de saída
-void imprimirListas(NodoInteiro* cabeca, FILE* arquivoSaida) {
-    fprintf(arquivoSaida, "[");
-    NodoInteiro* atual = cabeca;
-    while (atual != NULL) {
-        fprintf(arquivoSaida, "%d(", atual->chave);
-        NodoReal* atualReal = atual->listaReais;
-        if (atualReal != NULL) {
-            NodoReal* inicio = atualReal;
+void imprimirListaDupla(NoListaDupla* lista, FILE* saida) {
+    fprintf(saida, "[");
+    while (lista) {
+        fprintf(saida, "%d(", lista->chave);
+        NoListaSimples* listaSimples = lista->listaSimples;
+        if (listaSimples) {
+            NoListaSimples* inicio = listaSimples;
             do {
-                fprintf(arquivoSaida, "%.2f", atualReal->valor);
-                atualReal = atualReal->proximo;
-                if (atualReal != inicio) {
-                    fprintf(arquivoSaida, " - >");
-                }
-            } while (atualReal != inicio);
+                fprintf(saida, "%.2f", listaSimples->valor);
+                listaSimples = listaSimples->prox;
+                if (listaSimples != inicio) fprintf(saida, "->");
+            } while (listaSimples != inicio);
         }
-        fprintf(arquivoSaida, ")");
-        if (atual->proximo != NULL) {
-            fprintf(arquivoSaida, " - >");
-        }
-        atual = atual->proximo;
+        fprintf(saida, ")");
+        lista = lista->prox;
+        if (lista) fprintf(saida, "->");
     }
-    fprintf(arquivoSaida, "]\n");
+    fprintf(saida, "]\n");
 }
 
+// Função principal
 int main() {
-    FILE* arquivoEntrada = fopen("L1Q3.in", "r");
-    if (!arquivoEntrada) {
-        perror("Erro ao abrir o arquivo de entrada");
+    FILE* entrada = fopen("L1Q3.in", "r");
+    FILE* saida = fopen("L1Q3.out", "w");
+
+    if (!entrada || !saida) {
+        printf("Erro ao abrir os arquivos.\n");
         return 1;
     }
 
-    FILE* arquivoSaida = fopen("L1Q3.out", "w");
-    if (!arquivoSaida) {
-        perror("Erro ao criar o arquivo de saída");
-        fclose(arquivoEntrada);
-        return 1;
-    }
+    char linha[256];
+    while (fgets(linha, sizeof(linha), entrada)) {
+        NoListaDupla* listaDupla = NULL;
+        char* token = strtok(linha, " ");
 
-    char tipo;
-    int vetorInteiros[100], tamanhoInteiros = 0;
-    float vetorReais[100];
-    int tamanhoReais = 0;
-
-    // Leitura do arquivo de entrada
-    while (fscanf(arquivoEntrada, "%c", &tipo) != EOF) {
-        if (tipo == 'L') {
-            char subtipo;
-            fscanf(arquivoEntrada, "%c", &subtipo);
-            if (subtipo == 'E') {
-                int valor;
-                while (fscanf(arquivoEntrada, "%d", &valor) == 1) {
-                    vetorInteiros[tamanhoInteiros++] = valor;
-                }
-            } else if (subtipo == 'I') {
-                float valor;
-                while (fscanf(arquivoEntrada, "%f", &valor) == 1) {
-                    vetorReais[tamanhoReais++] = valor;
-                }
+        // Processa a parte "LE"
+        if (strcmp(token, "LE") == 0) {
+            while ((token = strtok(NULL, " ")) && strcmp(token, "LI") != 0) {
+                int chave = atoi(token);
+                listaDupla = inserirOrdenadoListaDupla(listaDupla, chave);
             }
         }
+
+        // Processa a parte "LI"
+        while ((token = strtok(NULL, " "))) {
+            float valor = atof(token);
+            NoListaDupla* atual = listaDupla;
+            while (atual) {
+                if (fabs(valor - atual->chave) <= 0.99) {
+                    atual->listaSimples = inserirOrdenadoListaSimples(atual->listaSimples, valor);
+                    break;
+                }
+                atual = atual->prox;
+            }
+        }
+
+        imprimirListaDupla(listaDupla, saida);
+
+        // Liberação de memória
+        while (listaDupla) {
+            NoListaDupla* temp = listaDupla;
+            listaDupla = listaDupla->prox;
+
+            NoListaSimples* listaSimples = temp->listaSimples;
+            while (listaSimples) {
+                NoListaSimples* tempSimples = listaSimples;
+                listaSimples = listaSimples->prox;
+                if (listaSimples == temp->listaSimples) break;
+                free(tempSimples);
+            }
+            free(temp);
+        }
     }
-    fclose(arquivoEntrada);
 
-    // Construção da lista duplamente ligada
-    NodoInteiro* cabeca = NULL;
-    for (int i = 0; i < tamanhoInteiros; i++) {
-        inserirOrdenadoInteiro(&cabeca, vetorInteiros[i]);
-    }
-
-    // Associação das listas de reais
-    associarListaReais(cabeca, vetorReais, tamanhoReais);
-
-    // Impressão das listas no arquivo de saída
-    imprimirListas(cabeca, arquivoSaida);
-
-    fclose(arquivoSaida);
+    fclose(entrada);
+    fclose(saida);
     return 0;
 }
+
