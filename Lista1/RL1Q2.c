@@ -1,9 +1,10 @@
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #define MAX_SIZE 100
-
+FILE *fp_out = NULL;
 // Definindo a pilha
 typedef struct Stack {
     char data[MAX_SIZE][100];
@@ -39,15 +40,15 @@ void pop(Stack *stack) {
     stack->top--;
 }
 
-void printStack(Stack *stack) {
+void printStack(FILE *fp_out,Stack *stack) {
     for (int i = 0; i <= stack->top; i++) {
-        printf("%s ", stack->data[i]);
+        fprintf(fp_out,"%s ", stack->data[i]);
     }
-    printf("\n");
+    fprintf(fp_out,"\n");
 }
 
 // Função para processar o push e pop com o devido logging
-void processPush(Stack *stack, const char *value) {
+void processPush(FILE *fp_out,Stack *stack, const char *value) {
     Stack tempStack;
     initStack(&tempStack);
     int popCount = 0;
@@ -61,17 +62,17 @@ void processPush(Stack *stack, const char *value) {
 
     // Se houve pops, imprime o número total de pops
     if (popCount > 0) {
-        printf("%dx-pop ", popCount);
+        fprintf(fp_out,"%dx-pop ", popCount);
     }
 
     // Loga a operação de push do novo valor
-    printf("push-%s ", value);
+    fprintf(fp_out,"push-%s ", value);
     push(stack, value);  // Empilha o valor no topo da pilha
 
     // Reempilhar os itens da pilha temporária de volta para a pilha principal
     while (!isEmpty(&tempStack)) {
         // Log cada push ao reempilhar
-        printf("push-%s ", tempStack.data[tempStack.top]);
+        fprintf(fp_out,"push-%s ", tempStack.data[tempStack.top]);
         push(stack, tempStack.data[tempStack.top]);
         tempStack.top--;  // Remove da pilha temporária
     }
@@ -79,26 +80,52 @@ void processPush(Stack *stack, const char *value) {
 
 // Função principal para processar a entrada e saída esperada
 int main() {
-    Stack stack;
-    initStack(&stack);
+    FILE *fp_in = fopen("L1Q2.in", "r");
+    FILE *fp_out = fopen("L1Q2.out", "w");
 
-    // Entrada fornecida: "Bruno Dani Carla Antônia Walter Maria João"
-    const char *input = "Bruno Dani Carla Antônia Walter Maria João";
-    
-    // Copiar a entrada para uma string mutável
-    char inputCopy[1000];  // Assumindo que o tamanho da entrada não ultrapasse 1000 caracteres
-    strcpy(inputCopy, input);
-
-    // Separar os nomes pela string
-    char *token = strtok(inputCopy, " ");
-    while (token != NULL) {
-        processPush(&stack, token);  // Processa cada nome com operações de push e pop
-        token = strtok(NULL, " ");
+    if (fp_in == NULL || fp_out == NULL) {
+        printf("Arquivos não podem ser abertos.\n");
+        return EXIT_FAILURE;
     }
 
-    // Print final da pilha
-    printf("\nFinal stack order:\n");
-    printStack(&stack);
+    // Entrada de dados, com a linha única fornecida
+    char input[1000];
+    int QTDX = 0;
+    bool condicao = fgets(input, sizeof(input), fp_in) != NULL;
 
+    while (condicao) {
+        Stack stack;
+        initStack(&stack);
+
+        // Entrada fornecida: "Bruno Dani Carla Antônia Walter Maria João"
+        // const char *input = "Bruno Dani Carla Antônia Walter Maria João";
+
+        // Copiar a entrada para uma string mutável
+        char inputCopy[1000];  // Assumindo que o tamanho da entrada não ultrapasse 1000 caracteres
+        strcpy(inputCopy, input);
+
+        // Separar os nomes pela string
+        char *token = strtok(inputCopy, " ");
+        while (token != NULL) {
+            processPush(fp_out,&stack, token);  // Processa cada nome com operações de push e pop
+            token = strtok(NULL, " ");
+        }
+
+        // Print final da pilha
+        printf("\nFinal stack order:\n");
+        //printStack(fp_out,&stack);
+
+        if (fgets(input, sizeof(input), fp_in) != NULL) {
+            condicao == true;
+        } else {
+            condicao == false;
+            QTDX++;
+            // fprintf(fp_out, "%s\n", "strgaugds");
+            //  Libera a memória
+            //free(listas);
+            //liberarLista(listaCabeça);
+            return 0;
+        }
+    }
     return 0;
 }
