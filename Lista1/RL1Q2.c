@@ -5,6 +5,7 @@
 
 #define MAX_SIZE 100
 FILE *fp_out = NULL;
+int firsttime = 0;
 // Definindo a pilha
 typedef struct Stack {
     char data[MAX_SIZE][100];
@@ -40,15 +41,15 @@ void pop(Stack *stack) {
     stack->top--;
 }
 
-void printStack(FILE *fp_out,Stack *stack) {
+void printStack(FILE *fp_out, Stack *stack) {
     for (int i = 0; i <= stack->top; i++) {
-        fprintf(fp_out,"%s ", stack->data[i]);
+        fprintf(fp_out, "%s ", stack->data[i]);
     }
-    fprintf(fp_out,"\n");
+    fprintf(fp_out, "\n");
 }
 
 // Função para processar o push e pop com o devido logging
-void processPush(FILE *fp_out,Stack *stack, const char *value) {
+void processPush(FILE *fp_out, Stack *stack, const char *value) {
     Stack tempStack;
     initStack(&tempStack);
     int popCount = 0;
@@ -62,17 +63,22 @@ void processPush(FILE *fp_out,Stack *stack, const char *value) {
 
     // Se houve pops, imprime o número total de pops
     if (popCount > 0) {
-        fprintf(fp_out,"%dx-pop ", popCount);
+        fprintf(fp_out, "%dx-pop ", popCount);
     }
 
     // Loga a operação de push do novo valor
-    fprintf(fp_out,"push-%s ", value);
+    if (firsttime == 1) {
+        fprintf(fp_out, "push-%s ", value);
+        firsttime = 0;
+    } else {
+        fprintf(fp_out, "push-%s ", value);
+    }
     push(stack, value);  // Empilha o valor no topo da pilha
 
     // Reempilhar os itens da pilha temporária de volta para a pilha principal
     while (!isEmpty(&tempStack)) {
         // Log cada push ao reempilhar
-        fprintf(fp_out,"push-%s ", tempStack.data[tempStack.top]);
+        fprintf(fp_out, "push-%s ", tempStack.data[tempStack.top]);
         push(stack, tempStack.data[tempStack.top]);
         tempStack.top--;  // Remove da pilha temporária
     }
@@ -92,7 +98,7 @@ int main() {
     char input[1000];
     int QTDX = 0;
     bool condicao = fgets(input, sizeof(input), fp_in) != NULL;
-
+    bool umavezporlinha = true;
     while (condicao) {
         Stack stack;
         initStack(&stack);
@@ -106,24 +112,34 @@ int main() {
 
         // Separar os nomes pela string
         char *token = strtok(inputCopy, " ");
-        while (token != NULL) {
-            processPush(fp_out,&stack, token);  // Processa cada nome com operações de push e pop
-            token = strtok(NULL, " ");
-        }
+        char *nxttoken = NULL;
+        do {
+            char *thistoken = token;
+            nxttoken = strtok(NULL, " ");
+            if (nxttoken == NULL && umavezporlinha) {
+                firsttime = 1;
+                umavezporlinha = false;
+            }
+
+            processPush(fp_out, &stack, thistoken);  // Processa cada nome com operações de push e pop
+
+            token = nxttoken;
+        } while (token != NULL);
 
         // Print final da pilha
         printf("\nFinal stack order:\n");
-        //printStack(fp_out,&stack);
+        // printStack(fp_out,&stack);
 
         if (fgets(input, sizeof(input), fp_in) != NULL) {
             condicao == true;
+            umavezporlinha = true;
         } else {
             condicao == false;
             QTDX++;
             // fprintf(fp_out, "%s\n", "strgaugds");
             //  Libera a memória
-            //free(listas);
-            //liberarLista(listaCabeça);
+            // free(listas);
+            // liberarLista(listaCabeça);
             return 0;
         }
     }
