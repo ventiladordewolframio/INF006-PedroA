@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #define MAX_SIZE 100
 FILE *fp_out = NULL;
@@ -68,7 +69,7 @@ void processPush(FILE *fp_out, Stack *stack, const char *value) {
 
     // Loga a operação de push do novo valor
     if (firsttime == 1) {
-        fprintf(fp_out, "push-%s ", value);
+        fprintf(fp_out, "push-%s", value);
         firsttime = 0;
     } else {
         fprintf(fp_out, "push-%s ", value);
@@ -103,9 +104,6 @@ int main() {
         Stack stack;
         initStack(&stack);
 
-        // Entrada fornecida: "Bruno Dani Carla Antônia Walter Maria João"
-        // const char *input = "Bruno Dani Carla Antônia Walter Maria João";
-
         // Copiar a entrada para uma string mutável
         char inputCopy[1000];  // Assumindo que o tamanho da entrada não ultrapasse 1000 caracteres
         strcpy(inputCopy, input);
@@ -135,11 +133,6 @@ int main() {
             umavezporlinha = true;
         } else {
             condicao == false;
-            QTDX++;
-            // fprintf(fp_out, "%s\n", "strgaugds");
-            //  Libera a memória
-            // free(listas);
-            // liberarLista(listaCabeça);
             return 0;
         }
     }
